@@ -2,7 +2,7 @@
 
 # === CONFIGURATION ===
 LEADER_URL="tcp://10.166.0.2:4321"           # Replace with your leader node's IP/port
-IMAGE="myusername/dlog-runner-py:latest"       # Your Docker image for the Dlog runner
+IMAGE="bogdanturbal/dlog-runner-py:latest"       # Your Docker image for the Dlog runner
 OUTPUT_CSV="dlog_results_difficulty.csv"
 
 # Use larger primes to increase the workload:
@@ -35,7 +35,7 @@ for p in "${PRIMES[@]}"; do
       START_TIME=$(date +%s)
 
       # Create the Docker service with our parameters
-      docker service create \
+      sudo docker service create \
         --network parcs \
         --restart-condition none \
         --env LEADER_URL="$LEADER_URL" \
@@ -48,7 +48,7 @@ for p in "${PRIMES[@]}"; do
 
       # Wait for the service to finish
       while :; do
-        STATUS=$(docker service ps "$SERVICE_NAME" --format "{{.CurrentState}}" | head -n1)
+        STATUS=$(sudo docker service ps "$SERVICE_NAME" --format "{{.CurrentState}}" | head -n1)
         if [[ $STATUS =~ ^(Shutdown|Complete|Failed).* ]]; then
           break
         fi
@@ -60,7 +60,7 @@ for p in "${PRIMES[@]}"; do
 
       # Log the results
       echo "$p,$diff_type,$workers,$x,$h,$ELAPSED" >> "$OUTPUT_CSV"
-      docker service rm "$SERVICE_NAME" > /dev/null
+      sudo docker service rm "$SERVICE_NAME" > /dev/null
 
       echo "Done: prime=$p, difficulty=$diff_type, workers=$workers took $ELAPSED seconds"
       echo "---------------------------------------------"
